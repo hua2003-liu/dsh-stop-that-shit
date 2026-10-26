@@ -4,6 +4,10 @@ This repository is an **unofficial** DeepSeek Harness (DSH) adapter for
 [Stop That Shit](https://github.com/lennney/stop-that-shit). It is not
 affiliated with, endorsed by, or maintained by the upstream project.
 
+The repository's own code is released under the MIT license in
+[LICENSE](LICENSE). The vendored and copied files keep the upstream MIT
+license described below.
+
 ## Upstream
 
 - Project: Stop That Shit (别再造史了)
