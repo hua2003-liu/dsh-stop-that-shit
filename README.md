@@ -42,11 +42,14 @@ dsh plugin --profile <profile> add github:hua2003-liu/dsh-stop-that-shit
 `dsh plugin add` 会把依赖写进 profile 并**同时启用 bundle**（已验证）。用别的 profile 测试时，
 `<profile>` 换成名字即可；`desktop` 归 Desktop 应用管理，装它请走插件页或 `plugin_manager`。
 
-**C. 本地目录**（开发时）：
+**C. 本地目录**（开发时，或离线安装）：
 
 ```powershell
 dsh plugin --profile <profile> add C:\path\to\dsh-stop-that-shit
 ```
+
+离线的做法是下载 [Releases](https://github.com/hua2003-liu/dsh-stop-that-shit/releases)
+里的 `dsh-stop-that-shit-<version>.tgz` 并解压，再把解压出的目录按上一行安装。
 
 ### 30 秒验证装好了
 
