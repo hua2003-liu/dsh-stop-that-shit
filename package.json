@@ -4,6 +4,11 @@
   "private": true,
   "description": "Unofficial Stop That Shit guard for DeepSeek Harness: skills, /sts command, and a per-session tool-call contract.",
   "license": "MIT",
+  "author": "hua2003-liu",
+  "homepage": "https://github.com/hua2003-liu/dsh-stop-that-shit#readme",
+  "bugs": {
+    "url": "https://github.com/hua2003-liu/dsh-stop-that-shit/issues"
+  },
   "type": "commonjs",
   "main": "index.cjs",
   "engines": {
@@ -25,11 +30,13 @@
     "icon.svg",
     "LICENSE",
     "NOTICE.md",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "test": "node test/plugin.test.cjs",
-    "check": "node --check index.cjs && node --check test/plugin.test.cjs",
+    "check": "node --check index.cjs && node --check test/plugin.test.cjs && node scripts/check-bundle.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
     "update-vendor": "node scripts/update-vendor.mjs"
   },
   "keywords": [

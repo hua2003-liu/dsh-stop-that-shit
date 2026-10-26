@@ -2,10 +2,6 @@ MIT License
 
 Copyright (c) 2026 hua2003-liu
 
-The files under `vendor/` and `skills/` are copied from
-https://github.com/lennney/stop-that-shit and remain under the upstream MIT
-license, Copyright (c) 2026 Stop That Shit contributors. See NOTICE.md.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
@@ -23,3 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Third-party notice: the files under `vendor/` and `skills/` are copied from
+https://github.com/lennney/stop-that-shit and remain under the upstream MIT
+license, Copyright (c) 2026 Stop That Shit contributors. See NOTICE.md and
+vendor/UPSTREAM-LICENSE.
