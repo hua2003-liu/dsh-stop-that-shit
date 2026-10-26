@@ -1,0 +1,52 @@
+{
+  "name": "dsh-stop-that-shit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Unofficial Stop That Shit guard for DeepSeek Harness: skills, /sts command, and a per-session tool-call contract.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "index.cjs",
+  "engines": {
+    "dsh": ">=0.2.1-rc.2",
+    "node": ">=22"
+  },
+  "exports": {
+    ".": "./index.cjs",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.cjs",
+    "cordis.patch.yml",
+    "vendor/",
+    "skills/",
+    "locale/*.json",
+    "icon.svg",
+    "LICENSE",
+    "NOTICE.md",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test/plugin.test.cjs",
+    "check": "node --check index.cjs && node --check test/plugin.test.cjs",
+    "update-vendor": "node scripts/update-vendor.mjs"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "cordis",
+    "stop-that-shit",
+    "guardrail"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hua2003-liu/dsh-stop-that-shit.git"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  }
+}

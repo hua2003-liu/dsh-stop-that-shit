@@ -1,0 +1,15 @@
+# Stop That Shit — DeepSeek Harness bundle patch.
+#
+# One row inserts the Host plugin. The plugin registers:
+#   - the stop-that-shit / stss skills in ctx.skills
+#   - the /sts slash command in ctx.commands
+#   - listeners on agent/pre-step, tools/pre-execute, tools/post-execute,
+#     session/created|disposed, subagent/start|end
+#
+# state lives under ~/.dsh/stop-that-shit unless dataDir overrides it.
+- insert:
+    - id: sts
+      name: dsh-stop-that-shit
+      config:
+        dataDir: ""
+        runCodeBindingOnly: false

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Stop That Shit",
+    "description": "Arms a task-boundary contract per session, then stops unrequested hashes, scope creep, intent violations, and task thrashing before each tool call."
+  }
+}

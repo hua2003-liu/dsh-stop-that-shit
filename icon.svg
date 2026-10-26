@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Stop That Shit">
+  <polygon points="42,8 86,8 120,42 120,86 86,120 42,120 8,86 8,42" fill="#c62828"/>
+  <polygon points="42,8 86,8 120,42 120,86 86,120 42,120 8,86 8,42" fill="none" stroke="#7f1111" stroke-width="4"/>
+  <text x="64" y="76" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#ffffff" letter-spacing="2">STOP</text>
+</svg>
