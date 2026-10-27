@@ -80,14 +80,14 @@ $stop-that-shit change files=src/** -- implement the parser
 
 | 字段 | 取值 | 默认 |
 |---|---|---|
-| mode | `answer` `review` `monitor` `change` `watch` | `unconfirmed`（只走 Stop Ladder，不构成完整契约） |
+| mode | `answer` `review` `monitor` `change` `open` | `unconfirmed`（只走 Stop Ladder，不构成完整契约） |
 | level | `watch` `guard` `lock` `off` | `watch` |
 | `files=` | `a/**\|b`，`**` 表示全树 | 不限边界 |
 | `deps=` | `allow` `ask` `deny` | `ask` |
 | `hash=` | `allow` `ask` `deny` | `deny` |
 | `agents=` | 非负整数 | 不限 |
 
-`--` 之后是任务正文；正文里不要再写指令。
+`--` 之后是任务正文；正文里不要再写指令。`/sts off` 解除本会话的契约。
 
 ### 判定结果
 
@@ -128,9 +128,28 @@ root lineage：`header.parentSession` 只给直接父；插件一路回溯到无
 # profile 的 cordis.patch.yml
 - id: sts
   config:
-    dataDir: ''              # 默认 ~/.dsh/stop-that-shit
+    dataDir: ''               # 默认 ~/.dsh/stop-that-shit
     runCodeBindingOnly: false # 见「已知限制」
+    defaultMode: change       # 空字符串 = 不默认武装（默认值）
+    defaultFiles: ''          # 默认边界，空 = 不限
+    defaultDeps: ask          # 默认依赖策略，空 = 走契约默认
+    defaultHash: deny         # 默认哈希策略，空 = 走契约默认
+    defaultLevel: ''          # watch|guard|lock|off，空 = watch
 ```
+
+`defaultMode` 是让这个插件「一直生效」的关键。设了它，**每个新根会话一创建就自动武装**，
+不用再写指令；子会话跟随根会话，不另立契约。显式指令会覆盖它，`/sts off` 解除本会话。
+
+```yaml
+# 推荐的自用配置：日常允许改动，但不许乱加依赖、不许顺手塞哈希
+- id: sts
+  config:
+    defaultMode: change
+    defaultDeps: ask
+    defaultHash: deny
+```
+
+profile 补丁是**整段替换** `config`，覆盖时要把上面所有字段一起写。
 
 ## 已知限制
 

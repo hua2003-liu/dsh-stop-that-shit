@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2026-10-27
+
+### Added
+
+- `defaultMode` (plus `defaultFiles`, `defaultDeps`, `defaultHash`,
+  `defaultLevel`): every new root session is armed at creation, so the guard
+  enforces without a per-task directive. Empty by default, so an install
+  without configuration stays advisory. Delegated sessions keep following the
+  root's contract instead of starting their own.
+- `/sts off` releases the current session's contract; the next directive arms it
+  again.
+
+### Fixed
+
+- Accepted mode names now match the vendored parser: `answer`, `review`,
+  `monitor`, `change`, `open`. `watch` is a level, not a mode, and `level=off`
+  is spelled as the bare `off` token.
+
 ## [0.1.0] - 2026-10-26
 
 First release. The DSH half of Stop That Shit, vendored against upstream

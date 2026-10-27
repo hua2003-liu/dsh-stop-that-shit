@@ -1,7 +1,7 @@
-'use strict';
+﻿'use strict';
 
 /**
- * stop-that-shit-dsh — DeepSeek Harness Host plugin.
+ * stop-that-shit-dsh 鈥?DeepSeek Harness Host plugin.
  *
  * This is the DSH half of Stop That Shit: the judgment lives in the vendored
  * adapter (vendor/), this file owns everything DSH-specific.
@@ -85,6 +85,53 @@ function plugin(ctx, config = {}) {
     : path.join(os.homedir(), '.dsh', 'stop-that-shit');
   const options = { dataDir };
 
+  // ---- default contract ---------------------------------------------------
+  //
+  // Without a directive the guard is advisory: it only reminds the model. A
+  // deployment that wants enforcement without a per-task directive sets
+  // `defaultMode`, and every new root session starts armed. A directive or
+  // `/sts` still overrides it, and `/sts off` releases it for that session.
+
+  const DEFAULT_MODES = new Set(['answer', 'review', 'monitor', 'change', 'open']);
+  const POLICIES = new Set(['allow', 'ask', 'deny']);
+  const LEVELS = new Set(['watch', 'guard', 'lock', 'off']);
+
+  function field(name, allowed) {
+    const value = typeof config[name] === 'string' ? config[name].trim().toLowerCase() : '';
+    if (!value) return '';
+    if (!allowed.has(value)) {
+      ctx.logger.warn(`[stop-that-shit] ignoring ${name}: ${value}`);
+      return '';
+    }
+    return value;
+  }
+
+  const defaultDirective = (() => {
+    const mode = field('defaultMode', DEFAULT_MODES);
+    if (!mode) return '';
+    const tokens = [`$stop-that-shit ${mode}`];
+    const files = typeof config.defaultFiles === 'string' ? config.defaultFiles.trim() : '';
+    if (files) tokens.push(`files=${files}`);
+    const deps = field('defaultDeps', POLICIES);
+    if (deps) tokens.push(`deps=${deps}`);
+    const hash = field('defaultHash', POLICIES);
+    if (hash) tokens.push(`hash=${hash}`);
+    const level = field('defaultLevel', LEVELS);
+    if (level) tokens.push(`level=${level}`);
+    return tokens.join(' ');
+  })();
+
+  function armDefaultContract(session) {
+    if (!defaultDirective || !session) return;
+    // A delegated session inherits the root contract; arming it would create a
+    // second, independent boundary.
+    if (session.header && session.header.parentSession) return;
+    const sessionId = session.id ? String(session.id) : '';
+    if (!sessionId) return;
+    const result = handleDshHook('agent/pre-step', { session: { id: sessionId }, prompt: defaultDirective }, options);
+    if (result) ctx.logger.info(`[stop-that-shit] default contract armed: ${defaultDirective}`);
+  }
+
   // `run_code` is the PTC transport: a bare async function with full Node
   // globals. Only assert binding-only when the deployment can prove it.
   setRunCodeBindingOnly(config.runCodeBindingOnly === true);
@@ -140,24 +187,28 @@ function plugin(ctx, config = {}) {
 
   // ---- /sts command -------------------------------------------------------
 
-  const MODE = /^\s*(review|answer|monitor|change|watch|status|runtime)\b([\s\S]*)$/i;
+  const MODE = /^\s*(review|answer|monitor|change|open|status|runtime|off)\b([\s\S]*)$/i;
 
   ctx.inject(['commands'], (scoped) => {
     scoped.commands.register({
       name: 'sts',
       description: 'Arm a Stop That Shit contract for this session, then send the task',
-      input: { hint: 'review|answer|monitor|change|watch|status [flags] -- task' },
+      input: { hint: 'review|answer|monitor|change|open|status|off [flags] -- task' },
       handler: ({ agent, rawInput }) => {
         const match = MODE.exec(rawInput || '');
         if (!match) {
-          return { kind: 'error', text: 'usage: /sts review|change|watch|status [files=...] -- task' };
+          return { kind: 'error', text: 'usage: /sts review|change|open|off [files=...] -- task' };
         }
         const mode = match[1].toLowerCase();
         const rest = match[2] || '';
         const sep = rest.indexOf('--');
         const flags = (sep >= 0 ? rest.slice(0, sep) : rest).trim();
         const task = sep >= 0 ? rest.slice(sep + 2).trim() : '';
-        const directive = `$stop-that-shit ${mode}${flags ? ` ${flags}` : ''}`;
+        // `/sts off` releases the session: `off` is a level token, not a mode,
+        // so the previous mode is untouched and a later directive re-arms.
+        const directive = mode === 'off'
+          ? `$stop-that-shit off${flags ? ` ${flags}` : ''}`
+          : `$stop-that-shit ${mode}${flags ? ` ${flags}` : ''}`;
 
         // Arm through the same parser the prompt directive uses. The synthetic
         // prompt is the directive only, so the contract and the task body are
@@ -255,6 +306,7 @@ function plugin(ctx, config = {}) {
   ctx.on('session/created', (session) => {
     const payload = fromNativeEvent('session/created', session);
     if (payload) handleDshHook('session/created', payload, options);
+    armDefaultContract(session);
   });
 
   ctx.on('session/disposed', (session) => {

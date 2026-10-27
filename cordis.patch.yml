@@ -7,9 +7,26 @@
 #     session/created|disposed, subagent/start|end
 #
 # state lives under ~/.dsh/stop-that-shit unless dataDir overrides it.
+#
+# defaultMode is empty here: without it the guard is advisory and only a
+# directive (`/sts …`, `$stop-that-shit …`) makes it enforce. Set it in a
+# profile patch to arm every new root session automatically, e.g.
+#
+#   - id: sts
+#     config:
+#       defaultMode: change
+#       defaultDeps: ask
+#       defaultHash: deny
+#
+# A profile patch replaces `config` wholesale, so restate every field.
 - insert:
     - id: sts
       name: dsh-stop-that-shit
       config:
         dataDir: ""
         runCodeBindingOnly: false
+        defaultMode: ""
+        defaultFiles: ""
+        defaultDeps: ""
+        defaultHash: ""
+        defaultLevel: ""

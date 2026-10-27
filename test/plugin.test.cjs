@@ -10,7 +10,7 @@ const plugin = require('../index.cjs');
 
 const CWD = 'C:/ws';
 
-function mount() {
+function mount(extra = {}) {
   const handlers = new Map();
   const skills = [];
   const commands = [];
@@ -19,7 +19,9 @@ function mount() {
     logger: { info() {}, warn() {}, error() {} },
     sessions: {
       get(id) {
-        return id === 'root' ? { id, header: { cwd: CWD } } : undefined;
+        if (id === 'root') return { id, header: { cwd: CWD } };
+        if (id === 'child') return { id, header: { cwd: CWD, parentSession: 'root' } };
+        return undefined;
       }
     },
     on(name, fn) {
@@ -51,7 +53,7 @@ function mount() {
   };
 
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sts-plugin-'));
-  plugin.apply(ctx, { dataDir });
+  plugin.apply(ctx, { dataDir, ...extra });
 
   return {
     skills,
@@ -215,4 +217,50 @@ test('/sts status answers without sending a task', async () => {
   assert.equal(result.kind, 'success');
   assert.match(result.text, /ARMED/);
   assert.equal(followups.length, 0);
+});
+
+test('defaultMode arms every new root session', async () => {
+  const h = mount({ defaultMode: 'review' });
+  h.fire('session/created', { id: 'root', header: { cwd: CWD } });
+
+  const denied = await h.gate('write', { file_path: `${CWD}/a.txt`, content: 'x' });
+  assert.equal(denied.kind, 'deny');
+  assert.match(denied.reason, /MODE_FORBIDS_MUTATION/);
+
+  // A delegated session carries no contract of its own; the root's still applies.
+  assert.equal((await h.gate('write', { file_path: `${CWD}/a.txt`, content: 'x' }, 'child')).kind, 'deny');
+});
+
+test('defaultMode builds the directive from the other defaults', async () => {
+  const h = mount({ defaultMode: 'change', defaultDeps: 'deny', defaultHash: 'allow' });
+  h.fire('session/created', { id: 'root', header: { cwd: CWD } });
+
+  const dep = await h.gate('pwsh', { command: 'npm install yaml' });
+  assert.equal(dep.kind, 'deny');
+  assert.match(dep.reason, /DEPENDENCY_NOT_AUTHORIZED/);
+
+  assert.deepEqual(await h.gate('write', {
+    file_path: `${CWD}/src/h.ts`,
+    content: 'const h = createHash("sha256")'
+  }), { kind: 'allow' });
+});
+
+test('an explicit directive overrides the defaultMode contract', async () => {
+  const h = mount({ defaultMode: 'review' });
+  h.fire('session/created', { id: 'root', header: { cwd: CWD } });
+  await h.preStep('$stop-that-shit change -- implement');
+  assert.deepEqual(await h.gate('write', { file_path: `${CWD}/a.txt`, content: 'x' }), { kind: 'allow' });
+});
+
+test('/sts off releases the contract until the next directive', async () => {
+  const h = mount({ defaultMode: 'review' });
+  h.fire('session/created', { id: 'root', header: { cwd: CWD } });
+  assert.equal((await h.gate('write', { file_path: `${CWD}/a.txt`, content: 'x' })).kind, 'deny');
+
+  const result = await h.commands[0].handler({
+    agent: { session: { id: 'root' }, followup() {} },
+    rawInput: ' off'
+  });
+  assert.equal(result.kind, 'success');
+  assert.deepEqual(await h.gate('write', { file_path: `${CWD}/a.txt`, content: 'x' }), { kind: 'allow' });
 });
